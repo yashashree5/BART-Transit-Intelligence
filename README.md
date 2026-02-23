@@ -237,5 +237,3 @@ MS Applied Data Intelligence · San Jose State University
 [LinkedIn](https://linkedin.com/in/yashashree1) · [GitHub](https://github.com/yashashree5)
 
 ---
-
-*Built with ❤️ in San Jose, CA*
