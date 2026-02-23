@@ -1,0 +1,107 @@
+"""
+snowflake/setup/load_to_snowflake.py
+Creates the BART table in Snowflake and loads our processed CSV into it.
+"""
+
+import os
+import glob
+import snowflake.connector
+from dotenv import load_dotenv
+
+load_dotenv()
+
+#Connect 
+conn = snowflake.connector.connect(
+    account=os.getenv("SNOWFLAKE_ACCOUNT"),
+    user=os.getenv("SNOWFLAKE_USER"),
+    password=os.getenv("SNOWFLAKE_PASSWORD"),
+)
+cursor = conn.cursor()
+print(" Connected to Snowflake!")
+
+#  Setup database + schema + warehouse
+setup_commands = [
+    "CREATE WAREHOUSE IF NOT EXISTS BART_WH WITH WAREHOUSE_SIZE='X-SMALL' AUTO_SUSPEND=60 AUTO_RESUME=TRUE",
+    "CREATE DATABASE IF NOT EXISTS BART_TRANSIT",
+    "USE DATABASE BART_TRANSIT",
+    "CREATE SCHEMA IF NOT EXISTS STAGING",
+    "USE SCHEMA STAGING",
+]
+for cmd in setup_commands:
+    cursor.execute(cmd)
+    print(f" {cmd[:50]}...")
+
+#  Create table 
+cursor.execute("""
+    CREATE OR REPLACE TABLE BART_TRANSIT.STAGING.TRIPS (
+        ingested_at         TIMESTAMP_TZ,
+        station_name        VARCHAR,
+        station_abbr        VARCHAR,
+        destination         VARCHAR,
+        destination_abbr    VARCHAR,
+        minutes_to_departure INTEGER,
+        delay_seconds       INTEGER,
+        platform            VARCHAR,
+        direction           VARCHAR,
+        line_color          VARCHAR,
+        train_cars          INTEGER,
+        delay_minutes       FLOAT,
+        is_delayed          VARCHAR,
+        delay_category      VARCHAR,
+        ingestion_date      DATE,
+        ingestion_hour      INTEGER
+    )
+""")
+print(" Table BART_TRANSIT.STAGING.TRIPS created!")
+
+# Upload CSV via internal stage
+# Find the CSV file Spark generated
+csv_files = glob.glob("staging/processed/*.csv")
+if not csv_files:
+    print(" No CSV found. Run delay_calculator.py first!")
+    exit()
+
+csv_file = csv_files[0]
+print(f" Uploading: {csv_file}")
+
+# Create internal stage
+cursor.execute("CREATE OR REPLACE STAGE BART_STAGE")
+
+# PUT uploads the local file to Snowflake's internal stage
+cursor.execute(f"PUT file://{os.path.abspath(csv_file)} @BART_STAGE AUTO_COMPRESS=TRUE")
+print(" File uploaded to Snowflake stage!")
+
+# COPY loads from stage into the table (skip header row)
+cursor.execute("""
+    COPY INTO BART_TRANSIT.STAGING.TRIPS
+    FROM @BART_STAGE
+    FILE_FORMAT = (
+        TYPE = CSV
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        SKIP_HEADER = 1
+        NULL_IF = ('NULL', 'null', '')
+    )
+    ON_ERROR = CONTINUE
+""")
+print(" Data loaded into Snowflake!")
+
+#Verify
+cursor.execute("SELECT COUNT(*) FROM BART_TRANSIT.STAGING.TRIPS")
+count = cursor.fetchone()[0]
+print(f"\n {count} rows loaded into Snowflake!")
+
+cursor.execute("""
+    SELECT station_name, destination, line_color,
+           delay_seconds, delay_category
+    FROM BART_TRANSIT.STAGING.TRIPS
+    WHERE is_delayed = 'Yes'
+    ORDER BY delay_seconds DESC
+    LIMIT 5
+""")
+print("\n Top delayed trains in Snowflake:")
+for row in cursor.fetchall():
+    print(row)
+
+cursor.close()
+conn.close()
+print("\n All done! Your data is in Snowflake.")
