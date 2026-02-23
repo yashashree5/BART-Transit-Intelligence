@@ -13,7 +13,7 @@
 
 ## 📸 Live Dashboard
 
-![BART Transit Intelligence Dashboard](dashboard_screenshot.png)
+![BART Transit Intelligence Dashboard](dashboard-image.png)
 
 > Live dashboard tracking 595 trains across all BART lines with real-time delay monitoring, AI-generated summaries, and station heatmaps.
 
