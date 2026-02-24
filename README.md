@@ -11,7 +11,7 @@
 
 ---
 
-## 📸 Live Dashboard
+##  Live Dashboard
 
 ![BART Transit Intelligence Dashboard](dashboard-image1.png)
 
@@ -19,7 +19,7 @@
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
                     ┌──────────────────────────────────────┐
@@ -45,7 +45,7 @@
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 - **Real-time ingestion** — Pulls live BART train departure data every 5 minutes via REST API
 - **Rate limiting** — Token bucket algorithm prevents API throttling
@@ -74,7 +74,7 @@ From a live pipeline run on Feb 21, 2026:
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -92,7 +92,7 @@ From a live pipeline run on Feb 21, 2026:
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 bart-pipeline/
@@ -137,7 +137,7 @@ bart-pipeline/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Python 3.10+
@@ -191,7 +191,7 @@ Open http://localhost:8080 → Enable `bart_pipeline` DAG
 
 ---
 
-## 🤖 AI Insights Layer
+##  AI Insights Layer
 
 Every 30 minutes, GPT-3.5 reads aggregated delay data from Snowflake and generates:
 
@@ -206,7 +206,7 @@ Every 30 minutes, GPT-3.5 reads aggregated delay data from Snowflake and generat
 
 ---
 
-## 📈 Pipeline Performance
+##  Pipeline Performance
 
 -  **Latency**: ~90 seconds from API call to Snowflake
 -  **Volume**: ~15,000 transit events/day
@@ -216,7 +216,7 @@ Every 30 minutes, GPT-3.5 reads aggregated delay data from Snowflake and generat
 
 ---
 
-## 🔧 Environment Variables
+##  Environment Variables
 
 ```bash
 BART_API_KEY=your_bart_api_key
@@ -230,7 +230,7 @@ STAGING_ENV=local
 
 ---
 
-## 👩‍💻 Author
+##  Author
 
 **Yashashree Shinde**
 MS Applied Data Intelligence · San Jose State University
